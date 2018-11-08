@@ -28,7 +28,7 @@ public class UserController {
 	public List<User> getAll(){
 		List<User> allUsers = this.userDAO.getAll();
 		if( allUsers == null || allUsers.isEmpty() ) {
-			throw new UserNotFoundException("no user found");
+			throw new UserNotFoundException("no uset found");
 		}
 		return allUsers;
 	}
