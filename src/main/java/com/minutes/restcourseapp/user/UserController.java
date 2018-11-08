@@ -1,11 +1,14 @@
 package com.minutes.restcourseapp.user;
 
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.*;
 import java.net.URI;
 import java.util.List;
 
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,12 +34,17 @@ public class UserController {
 	}
 	
 	@GetMapping("/users/{id}")
-	public User get(@PathVariable int id) {
+	public Resource<User> get(@PathVariable int id) {
 		User user = this.userDAO.get(id);
 		if( user == null ) {
 			throw new UserNotFoundException("id: " + id);
 		}
-		return user;
+		
+		//HATEOAS - Hypermedia as the engine of application state
+		Resource<User> resource = new Resource<>(user);
+		ControllerLinkBuilder linkTo = linkTo(methodOn(this.getClass()).getAll());
+		resource.add(linkTo.withRel("all-users"));
+		return resource;
 	}
 	
 	@PostMapping("/users")
