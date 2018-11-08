@@ -35,5 +35,13 @@ public class UserDAO {
 		users.put(user.getId(), user);
 		return user;
 	}
+	
+	public User delete(Integer id) {
+		User user = this.get(id);
+		if( user != null ) {
+			users.remove(id);
+		}
+		return user;
+	}
 
 }
