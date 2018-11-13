@@ -1,13 +1,11 @@
 package com.minutes.restcourseapp.user;
 
-import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
