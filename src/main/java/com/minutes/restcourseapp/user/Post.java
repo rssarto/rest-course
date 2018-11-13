@@ -5,6 +5,9 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 @Entity
 public class Post {
@@ -12,6 +15,9 @@ public class Post {
 	@Id
 	@GeneratedValue
 	private Integer id;
+	
+	@Size(min=2,message="Description must have at least 2 characters")
+	@NotBlank(message="Description cannot be null or empty")
 	private String description;
 	
 	@ManyToOne(fetch=FetchType.LAZY)

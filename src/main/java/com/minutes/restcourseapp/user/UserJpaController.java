@@ -1,11 +1,14 @@
 package com.minutes.restcourseapp.user;
 
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
@@ -31,6 +34,9 @@ public class UserJpaController {
 	
 	@Autowired
 	private UserRepository userRepository;
+	
+	@Autowired
+	private PostRepository postRepository;
 	
 	@Autowired
 	ResourceBundleMessageSource resourceBundleMessageSource;
@@ -85,5 +91,56 @@ public class UserJpaController {
 	@ApiOperation(value="Deletes a user by id.")
 	public void delete(@ApiParam(value="Users id that is going to be deleted.") @PathVariable Integer id) {
 		this.userRepository.deleteById(id);
+	}
+	
+	@GetMapping("/jpa/users/{id}/posts")
+	@ApiOperation("Get all posts from a specific user.")
+	public List<Post> getPosts(@PathVariable int id){
+		Optional<User> optUser = this.userRepository.findById(id);
+		if( !optUser.isPresent() ) {
+			throw new UserNotFoundException(this.resourceBundleMessageSource.getMessage("exception.notfound", null, LocaleContextHolder.getLocale()) + " id: " + id);			
+		}
+		
+		User user = optUser.get();
+		return user.getPosts();
+	}
+	
+	@GetMapping("/jpa/users/{userId}/posts/{postId}")
+	@ApiOperation("Finds a post by user and post id.")
+	public Post getPost(@PathVariable int userId, @PathVariable int postId) {
+		Optional<User> optUser = this.userRepository.findById(userId);
+		if( !optUser.isPresent() ) {
+			throw new UserNotFoundException(this.resourceBundleMessageSource.getMessage("exception.notfound", null, LocaleContextHolder.getLocale()) + " id: " + userId);			
+		}
+		
+		Post post = null;
+		final User user = optUser.get();
+		final List<Post> posts = user.getPosts();
+		if( posts != null && !posts.isEmpty() ) {
+			List<Post> foundPostList = posts.stream().filter(onePost -> postId == onePost.getId().intValue()).collect(Collectors.toList());
+			post = foundPostList.get(0);
+		}
+		
+		return post;
+	}
+	
+	@PostMapping("/jpa/users/{id}/posts")
+	@ApiOperation("Saves a post to a specific user.")
+	public ResponseEntity<Post> savePost(@PathVariable int id, @Valid @RequestBody Post post) {
+		Optional<User> optUser = this.userRepository.findById(id);
+		if( !optUser.isPresent() ) {
+			throw new UserNotFoundException(this.resourceBundleMessageSource.getMessage("exception.notfound", null, LocaleContextHolder.getLocale()) + " id: " + id);			
+		}
+		
+		User user = optUser.get();
+		post.setUser(user);
+		Post savedPost = this.postRepository.save(post);
+		
+		URI uri = ServletUriComponentsBuilder
+				.fromCurrentRequest()
+				.path("/{id}")
+				.buildAndExpand(savedPost.getId()).toUri();
+			
+		return ResponseEntity.created(uri).build();
 	}
 }
